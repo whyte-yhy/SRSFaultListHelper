@@ -1,0 +1,19 @@
+######### 1 need to be added to fault list (dtc in crs but not in srs)
+rb_cfh_EPB264Communication_flt
+rb_cfh_EPS132Communication_flt
+rb_cfh_FCM314Communication_flt
+rb_cfh_FCMVerificationFailed_flt
+rb_cfh_FLZCU23BCommunication_flt
+rb_cfh_FLZCUVerificationFailed_flt
+rb_cfh_ICC510Communication_flt
+rb_cfh_ONEBOX48ACommunication_flt
+rb_cfh_ONEBOXVerificaitonFailed_flt
+rb_cfh_PABCmd4D5Communication_flt
+rb_cfh_PABCmdVerificaitonFailed_flt
+rb_cfh_VCU4B9Communication_flt
+
+######### 2 maybe CRS missing some faults (dtc in srs but not in crs)
+
+######### 3 special DTCs require check
+rb_edr_DataAreaFull_flt: It is an internal fault, but it is described in CRS, so check the DTC number and other attributes
+rb_sqm_LowsidePowerstage: These faults are remarked as ErasableInternal, but other attributes follow NonErasable in CA
