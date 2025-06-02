@@ -79,6 +79,6 @@ class ExcelHelper:
     def __init__(self, CRS_path):
         self.excel = win32com.client.Dispatch("Excel.Application")
         self.CRS_path = CRS_path
-        self.workbook = excel.Workbooks.Open(CRS_path)
+        self.workbook = self.excel.Workbooks.Open(CRS_path)
         self.sheet = self.workbook.Sheets(2)
         self.max_row = self.sheet.UsedRange.Rows.Count

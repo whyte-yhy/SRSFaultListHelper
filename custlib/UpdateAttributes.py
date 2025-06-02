@@ -6,10 +6,11 @@ noValidResolveTime_list = list()
 
 ## dtc name, attribute name, external/erasableInternal/non-erasableInternal, crs, srs
 def get_updated_srs_excel_cell_value(dtcName, attrName, attr_DemRbEventCategoryRef, CRS_obj, SRS_obj, setState=False, updateDocFlag=False):
-    if attr_DemRbEventCategoryRef not in ('ExternalFault'):
-        log.Error(dtcName + ': DemRbEventCategoryRef is not valid')
+    # if attr_DemRbEventCategoryRef not in ('ExternalFault'):
+    #     return None
+    #     log.Error(dtcName + ': DemRbEventCategoryRef is not valid')
     
-    curDTC_crs = CRS_obj.getDTC(dtcName)
+    curDTC_crs = CRS_obj.getDTC(dtcName) if dtcName in CRS_obj.dtcName_list else None
     curDTC_srs = SRS_obj.getDTC(dtcName)
 
     ############################
@@ -33,12 +34,12 @@ def get_updated_srs_excel_cell_value(dtcName, attrName, attr_DemRbEventCategoryR
         tempRes = None
         if attr_DemRbEventCategoryRef == 'ExternalFault':
             tempRes =  curDTC_crs.getAttr('DTC Number').replace('0x', 'DTC')
-        else:
-            tempRes =  'ECULifeTimeFailure'
         if curDTC_srs.getAttr('DemEvent') == 'rb_edr_DataAreaFull_flt':
             tempRes =  'DTC927F47'
         elif curDTC_srs.getAttr('DemEvent') == 'rb_sft_ClockMonitoring_flt':
             tempRes =  'ECULifeTimeFailure'
+        if tempRes is None:
+            log.Warning("internal fault not supported: " + dtcName)
         return tempRes
     elif attrName == 'DemDTCSeverity':
         return None
@@ -162,11 +163,11 @@ def get_updated_srs_excel_cell_value(dtcName, attrName, attr_DemRbEventCategoryR
     #####################################
     ###  CustAttribute and non enum   ###
     #####################################
-    elif attrName == 'CustDTCUploadNum':
-        if str(curDTC_crs.getAttr('FaultNum(for DTC Upload)')).find('0x') != -1:
-            return curDTC_crs.getAttr('FaultNum(for DTC Upload)')
-        else:
-            return '0x' + curDTC_crs.getAttr('FaultNum(for DTC Upload)')
+    # elif attrName == 'CustDTCUploadNum':
+    #     if str(curDTC_crs.getAttr('FaultNum(for DTC Upload)')).find('0x') != -1:
+    #         return curDTC_crs.getAttr('FaultNum(for DTC Upload)')
+    #     else:
+    #         return '0x' + curDTC_crs.getAttr('FaultNum(for DTC Upload)')
     #######################
     ### document update ###
     #######################
@@ -179,22 +180,34 @@ def get_updated_srs_excel_cell_value(dtcName, attrName, attr_DemRbEventCategoryR
         if attrName == 'Cust init. qualification time':
             for line in str(curDTC_crs.getAttr('Qualification Time')).splitlines():
                 if line.lower().find('init') != -1:
-                    return line.split(':')[1].strip()
+                    try:
+                        return line.split(':')[1].strip()
+                    except:
+                        noValidResolveTime_list.append(dtcName)
             return "NA"
         elif attrName == 'Cust init. dequalification time':
             for line in str(curDTC_crs.getAttr('Dequalification Time')).splitlines():
                 if line.lower().find('init') != -1:
-                    return line.split(':')[1].strip()
+                    try:
+                        return line.split(':')[1].strip()
+                    except:
+                        noValidResolveTime_list.append(dtcName)
             return "NA"
         elif attrName == 'Cust cyc. qualification time':    # default cyc detection
             for line in str(curDTC_crs.getAttr('Qualification Time')).splitlines():
                 if line.lower().find('cyc') != -1:
-                    return line.split(':')[1].strip()
+                    try:
+                        return line.split(':')[1].strip()
+                    except:
+                        noValidResolveTime_list.append(dtcName)
             return "NA"
         elif attrName == 'Cust cyc. dequalification time':    # default cyc detection
             for line in str(curDTC_crs.getAttr('Dequalification Time')).splitlines():
                 if line.lower().find('cyc') != -1:
-                    return line.split(':')[1].strip()
+                    try:
+                        return line.split(':')[1].strip()
+                    except:
+                        noValidResolveTime_list.append(dtcName)
             return "NA"
         elif attrName == 'targetLinkTag':
             return curDTC_crs.getAttr('ID').replace('FLT_', '')  # cust attr, used for create doors link

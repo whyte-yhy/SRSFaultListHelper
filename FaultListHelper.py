@@ -95,7 +95,7 @@ def readCRS_and_createObject(CRS_path):
         # filter3: row should have a DTCName, except special case (ex. internal dtc crs dont have name)
         sheet_dtcName = excelHelper.sheet.Cells(row, crs_getAtrCol('Bosch_Name(For SRS FL)')).Value
         if sheet_dtcName is None or len(sheet_dtcName.strip()) <= 0:
-            error('row should have a DTCName, except special case (ex. internal dtc crs dont have name)')
+            warning('CRS ID ' + str(excelHelper.sheet.Cells(row, crs_getAtrCol('ID')).Value) + ' should have a DTCName, except special case (ex. internal dtc crs dont have name)')
             continue
         # filter4: relevant project check
         if excelHelper.sheet.Cells(row, crs_getAtrCol('Relevant Project')).Value is None:
@@ -138,9 +138,12 @@ def readSRS_and_createObject(SRS_path):
         # filter3: row should have a DTCName, except special case (ex. internal dtc crs dont have name)
         sheet_dtcName = excelHelper.sheet.Cells(row, srs_getAtrCol('DemEvent')).Value
         if sheet_dtcName is None or len(sheet_dtcName.strip()) <= 0:
-            print('find Blank dtc name in srs')
+            error('find Blank dtc name in srs')
             continue
-        # # filter4: row is needed variant
+        # filter4: row should be an external fault
+        if excelHelper.sheet.Cells(row, srs_getAtrCol('DemDTCRef')).Value in ('ECUInternalFailure', 'ECULifeTimeFailure'):
+            continue
+        # # filter5: row is needed variant
         # if sheet.Cells(row, srs_getAtrCol('Variants')).Value.find(VariantsInSRS) == -1:
         #     continue
 
@@ -180,17 +183,12 @@ def update_SRS(SRS_path, SRS_Updated_path, CRS_obj, SRS_obj):
         # filter4: DTC should in crs, except for internal DTC
         # cur dtc
         sheet_dtcName = excelHelper.sheet.Cells(row, getAtrCol('SRS', 'DemEvent')).Value.strip()
-
         # first read SRS
         sheet_DemRbEventCategoryRef = excelHelper.sheet.Cells(row, getAtrCol('SRS', 'DemRbEventCategoryRef')).Value.strip()
-        if sheet_dtcName.strip() == 'rb_sft_ClockMonitoring_flt':
-            sheet_DemRbEventCategoryRef = 'NonErasableInternalFlt'
-        # then read CRS for verify
-        if getDemRbEventCategoryRef(CRS_obj.getDTC(sheet_dtcName)) is not None:
-            sheet_DemRbEventCategoryRef = getDemRbEventCategoryRef(CRS_obj.getDTC(sheet_dtcName)) 
-        if sheet_DemRbEventCategoryRef == 'not set' or sheet_DemRbEventCategoryRef is None:
-            error(sheet_dtcName + ' DemRbEventCategoryRef get invalid value, please check')
-        # filter5: row is needed variant
+        # filter5: row is not internal dtc
+        if sheet_DemRbEventCategoryRef in ('NonErasableInternalFlt'):
+            continue
+        # filter6: row is needed variant
         # if sheet.Cells(row, srs_getAtrCol('Variants')).Value.find(VariantsInSRS) == -1:
         #     continue
         
